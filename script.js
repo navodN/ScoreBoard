@@ -59,6 +59,53 @@ function saveScore() {
     xhr.send(formData);
 }
 
+function saveBowlingFigures() {
+    const form = document.getElementById('bowlingFiguresForm');
+    const formData = new FormData(form);
+
+    // Add additional fields to the form data
+    formData.append('bowlerId', document.getElementById('bowler').value);
+    formData.append('bowlingOrder', document.getElementById('bowlingOrder').value);
+    formData.append('overs', document.getElementById('overs').value);
+    formData.append('maidens', document.getElementById('maidens').value);
+    formData.append('runsConceded', document.getElementById('runsConceded').value);
+    formData.append('wickets', document.getElementById('wickets').value);
+    formData.append('wides', document.getElementById('wides').value);
+    formData.append('noBalls', document.getElementById('noballs').value);
+    formData.append('dots', document.getElementById('dots').value);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'ssckVCKBallProcess.php', true);
+
+    xhr.onload = function () {
+        if (xhr.status === 200 && xhr.readyState === 4) {
+          if (xhr.responseText === 'success') {
+            alert('Figure saved successfully!');
+            resetForm();
+            toggleScoreView(); // Refresh the scorecard
+          }else{
+            alert('Error Figure score: ' + xhr.responseText);
+          }
+        } else {
+          alert('An error occurred: ' + xhr.statusText);
+        }
+      };
+
+    xhr.onerror = function () {
+        alert('An error occurred during the request.');
+    };
+
+    xhr.send(formData);
+}
+
+function resetBowlingForm() {
+    document.getElementById('bowlingFiguresForm').reset();
+}
+
+function toggleBowlingView() {
+    window.location.reload(); // Reload the page to refresh the bowling figures
+}
+
 function deleteScore(playerId) {
     if (!confirm('Are you sure you want to delete this record?')) {
         return;
@@ -69,6 +116,39 @@ function deleteScore(playerId) {
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', 'deleteRec.php', true);
+
+    xhr.onload = function () {
+        if (xhr.status === 200 && xhr.readyState === 4) {
+            const response = JSON.parse(xhr.responseText);
+            if (response.success) {
+                alert(response.message);
+                toggleScoreView(); // Refresh the scorecard
+            } else {
+                alert('Error deleting record: ' + response.message);
+            }
+        } else {
+            alert('An error occurred: ' + xhr.statusText);
+        }
+    };
+
+    xhr.onerror = function () {
+        alert('An error occurred during the request.');
+    };
+
+    xhr.send(formData);
+
+}
+
+function deleteBowlingFigure(playerId) {
+    if (!confirm('Are you sure you want to delete this figure?')) {
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('playerId', playerId);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'deleteFigure.php', true);
 
     xhr.onload = function () {
         if (xhr.status === 200 && xhr.readyState === 4) {

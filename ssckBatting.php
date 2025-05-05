@@ -752,14 +752,6 @@ $players_vck = mysqli_fetch_assoc($vck);
                                 <label for="dots">Dot Balls</label>
                                 <input type="number" id="dots" class="form-control" min="0" value="0" required>
                             </div>
-                            <div class="form-group">
-                                <label for="foursConceded">4s Conceded</label>
-                                <input type="number" id="foursConceded" class="form-control" min="0" value="0" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="sixesConceded">6s Conceded</label>
-                                <input type="number" id="sixesConceded" class="form-control" min="0" value="0" required>
-                            </div>
                         </div>
 
                         <div class="actions">
@@ -791,127 +783,50 @@ $players_vck = mysqli_fetch_assoc($vck);
                                     <th>WD</th>
                                     <th>NB</th>
                                     <th>Dots</th>
-                                    <th>4s</th>
-                                    <th>6s</th>
                                     <th>Econ</th>
-                                    <th>Actions</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="bowlingScorecard">
-                                <!-- Sample data - would be populated dynamically -->
-                                <tr>
-                                    <td>
-                                        <div class="player-stats">
-                                            <img src="/api/placeholder/30/30" alt="Player" class="player-img">
-                                            <div>
-                                                <div>Mitchell Starc</div>
-                                                <div class="bowling-type">Left-arm fast</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>3.0</td>
-                                    <td>0</td>
-                                    <td>28</td>
-                                    <td>1</td>
-                                    <td>2</td>
-                                    <td>1</td>
-                                    <td>9</td>
-                                    <td>4</td>
-                                    <td>1</td>
-                                    <td>9.33</td>
-                                    <td>
-                                        <button class="btn btn-primary btn-sm">Edit</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="player-stats">
-                                            <img src="/api/placeholder/30/30" alt="Player" class="player-img">
-                                            <div>
-                                                <div>Pat Cummins</div>
-                                                <div class="bowling-type">Right-arm fast</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>4.0</td>
-                                    <td>1</td>
-                                    <td>32</td>
-                                    <td>1</td>
-                                    <td>1</td>
-                                    <td>0</td>
-                                    <td>12</td>
-                                    <td>3</td>
-                                    <td>2</td>
-                                    <td>8.00</td>
-                                    <td>
-                                        <button class="btn btn-primary btn-sm">Edit</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="player-stats">
-                                            <img src="/api/placeholder/30/30" alt="Player" class="player-img">
-                                            <div>
-                                                <div>Adam Zampa</div>
-                                                <div class="bowling-type">Right-arm legbreak</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>2.0</td>
-                                    <td>0</td>
-                                    <td>22</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>4</td>
-                                    <td>2</td>
-                                    <td>1</td>
-                                    <td>11.00</td>
-                                    <td>
-                                        <button class="btn btn-primary btn-sm">Edit</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="player-stats">
-                                            <img src="/api/placeholder/30/30" alt="Player" class="player-img">
-                                            <div>
-                                                <div>Nathan Lyon</div>
-                                                <div class="bowling-type">Right-arm offbreak</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>3.0</td>
-                                    <td>0</td>
-                                    <td>25</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>0</td>
-                                    <td>8</td>
-                                    <td>3</td>
-                                    <td>1</td>
-                                    <td>8.33</td>
-                                    <td>
-                                        <button class="btn btn-primary btn-sm">Edit</button>
-                                    </td>
-                                </tr>
+                            <tbody>
+                                <?php
+                                $bowling_result = Database::q("SELECT p.first_name, p.last_name, b.* 
+                                    FROM players p 
+                                    LEFT JOIN bowling_figures b ON p.player_id = b.player_id 
+                                    WHERE p.team_id = 2
+                                    ORDER BY b.bowling_ord ASC");
+
+                                if ($bowling_result && mysqli_num_rows($bowling_result) > 0) {
+                                    while ($row = mysqli_fetch_assoc($bowling_result)) {
+                                        // Only show bowlers who have bowled (is_bowled = 1)
+                                        if ($row['is_bowled'] == 1) {
+                                            $econ = ($row['overs'] > 0) ? round($row['runs_conceded'] / $row['overs'], 2) : 0;
+                                            ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></td>
+                                                <td><?php echo (float)$row['overs']; ?></td>
+                                                <td><?php echo (int)$row['maidens']; ?></td>
+                                                <td><?php echo (int)$row['runs_conceded']; ?></td>
+                                                <td><?php echo (int)$row['wickets']; ?></td>
+                                                <td><?php echo (int)$row['wides']; ?></td>
+                                                <td><?php echo (int)$row['no_balls']; ?></td>
+                                                <td><?php echo (int)$row['dots']; ?></td>
+                                                <td><?php echo $econ; ?></td>
+                                                <td>
+                                                    <button class="btn btn-danger btn-sm" onclick="deleteBowlingFigure(<?php echo (int)$row['player_id']; ?>)">Delete</button>
+                                                </td>
+                                            </tr>
+                                            <?php
+                                        }
+                                    }
+                                } else {
+                                    ?>
+                                    <tr>
+                                        <td colspan="10" style="text-align:center;">No bowling figures available.</td>
+                                    </tr>
+                                    <?php
+                                }
+                                ?>
                             </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="1"><strong>Total</strong></td>
-                                    <td><strong>12.0</strong></td>
-                                    <td><strong>0</strong></td>
-                                    <td><strong>107</strong></td>
-                                    <td><strong>2</strong></td>
-                                    <td><strong>3</strong></td>
-                                    <td><strong>1</strong></td>
-                                    <td><strong>33</strong></td>
-                                    <td><strong>12</strong></td>
-                                    <td><strong>5</strong></td>
-                                    <td><strong>8.92</strong></td>
-                                    <td></td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
                 </div>
