@@ -576,98 +576,104 @@ $players_vck = mysqli_fetch_assoc($vck);
                             </thead>
                             <tbody id="battingScorecard">
                                 <!-- Sample data - would be populated dynamically -->
-                                <tr>
-                                    <td>
-                                        <div class="player-stats">
-                                            <img src="/api/placeholder/30/30" alt="Player" class="player-img">
-                                            <span>Rohit Sharma</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div>c Smith b Cummins</div>
-                                        <div class="dismissal-details">Caught at first slip</div>
-                                    </td>
-                                    <td>45</td>
-                                    <td>28</td>
-                                    <td>4</td>
-                                    <td>3</td>
-                                    <td>160.71</td>
-                                    <td>
-                                        <button class="btn btn-primary btn-sm">Edit</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="player-stats">
-                                            <img src="/api/placeholder/30/30" alt="Player" class="player-img">
-                                            <span>KL Rahul</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div>b Starc</div>
-                                        <div class="dismissal-details">Bowled through the gate</div>
-                                    </td>
-                                    <td>23</td>
-                                    <td>19</td>
-                                    <td>3</td>
-                                    <td>0</td>
-                                    <td>121.05</td>
-                                    <td>
-                                        <button class="btn btn-primary btn-sm">Edit</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="player-stats">
-                                            <img src="/api/placeholder/30/30" alt="Player" class="player-img">
-                                            <span>Virat Kohli</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="status status-notout">Not Out</span>
-                                    </td>
-                                    <td>67</td>
-                                    <td>52</td>
-                                    <td>7</td>
-                                    <td>2</td>
-                                    <td>128.85</td>
-                                    <td>
-                                        <button class="btn btn-primary btn-sm">Edit</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="player-stats">
-                                            <img src="/api/placeholder/30/30" alt="Player" class="player-img">
-                                            <span>Rishabh Pant</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="status status-notout">Not Out</span>
-                                    </td>
-                                    <td>32</td>
-                                    <td>18</td>
-                                    <td>3</td>
-                                    <td>2</td>
-                                    <td>177.78</td>
-                                    <td>
-                                        <button class="btn btn-primary btn-sm">Edit</button>
-                                    </td>
-                                </tr>
+                                <?php
+                                // Fetch SSCK players who have batted (is_batted = 1)
+                                $batting_result = Database::q("SELECT p.*, b.* 
+                                    FROM players p 
+                                    LEFT JOIN batting_scores b ON p.player_id = b.player_id 
+                                    WHERE p.team_id = 1 AND b.is_batted = 1 
+                                    ORDER BY b.position ASC");
+
+                                while ($row = mysqli_fetch_assoc($batting_result)) {
+                                    // Calculate strike rate
+                                    $sr = ($row['balls_faced'] > 0) ? round(($row['runs'] / $row['balls_faced']) * 100, 2) : 0;
+                                    $player_id = $row['player_id'];
+
+                                    // Dismissal status
+                                    if ($row['is_out']) {
+                                        $dismissal_status = '<span class="status status-out">Out</span>';
+                                    } else {
+                                        $dismissal_status = '<span class="status status-notout">Not Out</span>';
+                                    }
+                                    ?>
+                                    <tr>
+                                        <td>
+                                            <div class="player-stats">
+                                                <span><?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <?php
+                                            if ($row['is_out']) {
+                                                echo $row['dismissal_status'];
+                                            }
+                                            ?>
+                                            <?php echo $dismissal_status; ?>
+                                            <?php if ($row['is_out']) {
+                                                echo '<div class="dismissal-details">' . ucfirst(htmlspecialchars($row['dismissal_type'])) . '</div>';
+                                            } ?>
+                                        </td>
+                                        <td><?php echo (int)$row['runs']; ?></td>
+                                        <td><?php echo (int)$row['balls_faced']; ?></td>
+                                        <td><?php echo (int)$row['fours']; ?></td>
+                                        <td><?php echo (int)$row['sixes']; ?></td>
+                                        <td><?php echo $sr; ?></td>
+                                        <td>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteScore(<?php echo($player_id) ?>)">Delete</button>
+                                        </td>
+                                    </tr>
+                                <?php
+                                }
+                                ?>
+                                
                             </tbody>
                             <tfoot>
+                                <?php
+                                // Calculate batting totals for SSCK
+                                $total_runs = 0;
+                                $total_balls = 0;
+                                $total_fours = 0;
+                                $total_sixes = 0;
+                                $total_wickets = 0;
+
+                                mysqli_data_seek($batting_result, 0); // Reset pointer
+                                while ($row = mysqli_fetch_assoc($batting_result)) {
+                                    $total_runs += (int)$row['runs'];
+                                    $total_balls += (int)$row['balls_faced'];
+                                    $total_fours += (int)$row['fours'];
+                                    $total_sixes += (int)$row['sixes'];
+                                    if ($row['is_out']) {
+                                        $total_wickets++;
+                                    }
+                                }
+                                $strike_rate = ($total_balls > 0) ? round(($total_runs / $total_balls) * 100, 2) : 0;
+                                ?>
                                 <tr>
                                     <td colspan="2"><strong>Total</strong></td>
-                                    <td><strong>167/2</strong></td>
-                                    <td><strong>117</strong></td>
-                                    <td><strong>17</strong></td>
-                                    <td><strong>7</strong></td>
-                                    <td><strong>142.74</strong></td>
+                                    <td><strong><?php echo $total_runs . '/' . $total_wickets; ?></strong></td>
+                                    <td><strong><?php echo $total_balls; ?></strong></td>
+                                    <td><strong><?php echo $total_fours; ?></strong></td>
+                                    <td><strong><?php echo $total_sixes; ?></strong></td>
+                                    <td><strong><?php echo $strike_rate; ?></strong></td>
                                     <td></td>
                                 </tr>
                                 <tr>
+                                    <?php
+                                    // Fetch SSCK players who have not batted yet (is_batted = 0)
+                                    $yet_to_bat_result = Database::q("SELECT first_name, last_name FROM players p 
+                                        LEFT JOIN batting_scores b ON p.player_id = b.player_id 
+                                        WHERE p.team_id = 1 AND (b.is_batted = 0 OR b.is_batted IS NULL)");
+
+                                    $yet_to_bat_names = [];
+                                    while ($row = mysqli_fetch_assoc($yet_to_bat_result)) {
+                                        $yet_to_bat_names[] = htmlspecialchars($row['first_name'] . ' ' . $row['last_name']);
+                                    }
+                                    ?>
                                     <td colspan="8">
-                                        <div><strong>Yet to bat:</strong> Hardik Pandya, Ravindra Jadeja, Axar Patel, Bhuvneshwar Kumar, Jasprit Bumrah, Yuzvendra Chahal</div>
+                                        <div>
+                                            <strong>Yet to bat:</strong>
+                                            <?php echo !empty($yet_to_bat_names) ? implode(', ', $yet_to_bat_names) : 'None'; ?>
+                                        </div>
                                     </td>
                                 </tr>
                             </tfoot>
@@ -975,7 +981,7 @@ $players_vck = mysqli_fetch_assoc($vck);
 
         // Toggle scorecard view (placeholder function)
         function toggleScoreView() {
-            // This would typically refresh the data from the server
+            window.location.reload();
             alert('Scorecard refreshed');
         }
     </script>

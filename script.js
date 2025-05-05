@@ -58,3 +58,36 @@ function saveScore() {
 
     xhr.send(formData);
 }
+
+function deleteScore(playerId) {
+    if (!confirm('Are you sure you want to delete this record?')) {
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('playerId', playerId);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'deleteRec.php', true);
+
+    xhr.onload = function () {
+        if (xhr.status === 200 && xhr.readyState === 4) {
+            const response = JSON.parse(xhr.responseText);
+            if (response.success) {
+                alert(response.message);
+                toggleScoreView(); // Refresh the scorecard
+            } else {
+                alert('Error deleting record: ' + response.message);
+            }
+        } else {
+            alert('An error occurred: ' + xhr.statusText);
+        }
+    };
+
+    xhr.onerror = function () {
+        alert('An error occurred during the request.');
+    };
+
+    xhr.send(formData);
+
+}
