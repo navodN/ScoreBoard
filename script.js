@@ -59,6 +59,46 @@ function saveScore() {
     xhr.send(formData);
 }
 
+function saveScore2() {
+    const form = document.getElementById('battingScoreForm');
+    const formData = new FormData(form);
+
+    // Add additional fields to the form data
+    formData.append('playerId', document.getElementById('player').value);
+    formData.append('position', document.getElementById('position').value);
+    formData.append('runs', document.getElementById('runs').value);
+    formData.append('balls', document.getElementById('balls').value);
+    formData.append('fours', document.getElementById('fours').value);
+    formData.append('sixes', document.getElementById('sixes').value);
+    formData.append('isOut', document.getElementById('isOut').value);
+    formData.append('dismissalType', document.getElementById('dismissalType').value);
+    formData.append('bowledBy', document.getElementById('bowledBy').value);
+    formData.append('caughtBy', document.getElementById('caughtBy').value);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'vckBatProcess.php', true);
+
+    xhr.onload = function () {
+      if (xhr.status === 200 && xhr.readyState === 4) {
+        if (xhr.responseText === 'success') {
+          alert('Score saved successfully!');
+          resetForm();
+          toggleScoreView(); // Refresh the scorecard
+        }else{
+          alert('Error saving score: ' + xhr.responseText);
+        }
+      } else {
+        alert('An error occurred: ' + xhr.statusText);
+      }
+    };
+
+    xhr.onerror = function () {
+      alert('An error occurred during the request.');
+    };
+
+    xhr.send(formData);
+}
+
 function saveBowlingFigures() {
     const form = document.getElementById('bowlingFiguresForm');
     const formData = new FormData(form);
@@ -76,6 +116,45 @@ function saveBowlingFigures() {
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', 'ssckVCKBallProcess.php', true);
+
+    xhr.onload = function () {
+        if (xhr.status === 200 && xhr.readyState === 4) {
+          if (xhr.responseText === 'success') {
+            alert('Figure saved successfully!');
+            resetForm();
+            toggleScoreView(); // Refresh the scorecard
+          }else{
+            alert('Error Figure score: ' + xhr.responseText);
+          }
+        } else {
+          alert('An error occurred: ' + xhr.statusText);
+        }
+      };
+
+    xhr.onerror = function () {
+        alert('An error occurred during the request.');
+    };
+
+    xhr.send(formData);
+}
+
+function saveBowlingFigures() {
+    const form = document.getElementById('bowlingFiguresForm');
+    const formData = new FormData(form);
+
+    // Add additional fields to the form data
+    formData.append('bowlerId', document.getElementById('bowler').value);
+    formData.append('bowlingOrder', document.getElementById('bowlingOrder').value);
+    formData.append('overs', document.getElementById('overs').value);
+    formData.append('maidens', document.getElementById('maidens').value);
+    formData.append('runsConceded', document.getElementById('runsConceded').value);
+    formData.append('wickets', document.getElementById('wickets').value);
+    formData.append('wides', document.getElementById('wides').value);
+    formData.append('noBalls', document.getElementById('noballs').value);
+    formData.append('dots', document.getElementById('dots').value);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'vckSSCKBallProcess.php', true);
 
     xhr.onload = function () {
         if (xhr.status === 200 && xhr.readyState === 4) {

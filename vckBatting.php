@@ -374,10 +374,10 @@ $players_vck = mysqli_fetch_assoc($vck);
                 <a href="#" class="menu-item">
                     <i class="fas fa-calendar-alt"></i> Matches
                 </a>
-                <a href="ssckBatting.php" class="menu-item active">
+                <a href="ssckBatting.php" class="menu-item">
                     <i class="fas fa-chart-bar"></i> SSCK Batting
                 </a>
-                <a href="vckBatting.php" class="menu-item">
+                <a href="vckBatting.php" class="menu-item active">
                     <i class="fas fa-chart-bar"></i> VCK Batting
                 </a>
                 <a href="#" class="menu-item">
@@ -412,7 +412,7 @@ $players_vck = mysqli_fetch_assoc($vck);
                     </div>
                     <div class="match-info-item">
                         <div class="match-info-label">Date</div>
-                        <div class="match-info-value">May 9, 2025</div>
+                        <div class="match-info-value">May 9, 2025 / May 10, 2025</div>
                     </div>
                     <div class="match-info-item">
                         <div class="match-info-label">Match Status</div>
@@ -420,7 +420,7 @@ $players_vck = mysqli_fetch_assoc($vck);
                     </div>
                     <div class="match-info-item">
                         <div class="match-info-label">Current Innings</div>
-                        <div class="match-info-value">1st Innings (SSCK Batting)</div>
+                        <div class="match-info-value">1st Innings (VCK Batting)</div>
                     </div>
                 </div>
             </div>
@@ -439,10 +439,10 @@ $players_vck = mysqli_fetch_assoc($vck);
                                     <option value="">Select Batsman</option>
 
                                     <?php
-                                    mysqli_data_seek($ssck, 0); // Reset the pointer to the beginning
-                                    while ($players_ssck = mysqli_fetch_assoc($ssck)) {
+                                    mysqli_data_seek($vck, 0); // Reset the pointer to the beginning
+                                    while ($players_vck = mysqli_fetch_assoc($vck)) {
                                     ?>
-                                        <option value="<?php echo $players_ssck['player_id'] ?>"><?php echo $players_ssck['first_name'] . ' ' . $players_ssck['last_name'] ?></option>
+                                        <option value="<?php echo $players_vck['player_id'] ?>"><?php echo $players_vck['first_name'] . ' ' . $players_vck['last_name'] ?></option>
                                     <?php
                                     }
                                     ?>
@@ -516,11 +516,11 @@ $players_vck = mysqli_fetch_assoc($vck);
                                 <select id="bowledBy" class="form-control">
                                     <option value="">Select Bowler</option>
                                     <?php
-                                    mysqli_data_seek($vck, 0); // Reset the pointer to the beginning   
-                                    while ($players_vck = mysqli_fetch_assoc($vck)) {
-                                        if (!empty($players_vck['bowling_style'])) { // Check if bowling_style is not null or empty
+                                    mysqli_data_seek($ssck, 0); // Reset the pointer to the beginning   
+                                    while ($players_ssck = mysqli_fetch_assoc($ssck)) {
+                                        if (!empty($players_ssck['bowling_style'])) { // Check if bowling_style is not null or empty
                                     ?>
-                                            <option value="<?php echo $players_vck['player_id'] ?>"><?php echo $players_vck['first_name'] . ' ' . $players_vck['last_name'] ?></option>
+                                            <option value="<?php echo $players_ssck['player_id'] ?>"><?php echo $players_ssck['first_name'] . ' ' . $players_ssck['last_name'] ?></option>
                                     <?php
                                         }
                                     }
@@ -532,10 +532,10 @@ $players_vck = mysqli_fetch_assoc($vck);
                                 <select id="caughtBy" class="form-control">
                                     <option value="">Select Fielder</option>
                                     <?php
-                                    mysqli_data_seek($vck, 0); // Reset the pointer to the beginning
-                                    while ($players_vck = mysqli_fetch_assoc($vck)) {
+                                    mysqli_data_seek($ssck, 0); // Reset the pointer to the beginning
+                                    while ($players_ssck = mysqli_fetch_assoc($ssck)) {
                                     ?>
-                                        <option value="<?php echo $players_vck['player_id'] ?>"><?php echo $players_vck['first_name'] . ' ' . $players_vck['last_name'] ?></option>
+                                        <option value="<?php echo $players_ssck['player_id'] ?>"><?php echo $players_ssck['first_name'] . ' ' . $players_ssck['last_name'] ?></option>
                                     <?php
                                     }
                                     ?>
@@ -554,7 +554,7 @@ $players_vck = mysqli_fetch_assoc($vck);
             <!-- Current Batting Scorecard -->
             <div class="card score-card">
                 <div class="card-header">
-                    <h3 class="card-title">SSCK Batting Scorecard</h3>
+                    <h3 class="card-title">VCK Batting Scorecard</h3>
                     <span class="toggle-view" onclick="toggleScoreView()">
                         <i class="fas fa-sync-alt"></i> Refresh
                     </span>
@@ -581,7 +581,7 @@ $players_vck = mysqli_fetch_assoc($vck);
                                 $batting_result = Database::q("SELECT p.*, b.* 
                                     FROM players p 
                                     LEFT JOIN batting_scores b ON p.player_id = b.player_id 
-                                    WHERE p.team_id = 1 AND b.is_batted = 1 
+                                    WHERE p.team_id = 2 AND b.is_batted = 1 
                                     ORDER BY b.position ASC");
 
                                 while ($row = mysqli_fetch_assoc($batting_result)) {
@@ -662,7 +662,7 @@ $players_vck = mysqli_fetch_assoc($vck);
                                     // Fetch SSCK players who have not batted yet (is_batted = 0)
                                     $yet_to_bat_result = Database::q("SELECT first_name, last_name FROM players p 
                                         LEFT JOIN batting_scores b ON p.player_id = b.player_id 
-                                        WHERE p.team_id = 1 AND (b.is_batted = 0 OR b.is_batted IS NULL)");
+                                        WHERE p.team_id = 2 AND (b.is_batted = 0 OR b.is_batted IS NULL)");
 
                                     $yet_to_bat_names = [];
                                     while ($row = mysqli_fetch_assoc($yet_to_bat_result)) {
@@ -695,11 +695,11 @@ $players_vck = mysqli_fetch_assoc($vck);
                                 <select id="bowler" class="form-control" required>
                                     <option value="">Select Bowler</option>
                                     <?php
-                                    mysqli_data_seek($vck, 0); // Reset the pointer to the beginning   
-                                    while ($players_vck = mysqli_fetch_assoc($vck)) {
-                                        if (!empty($players_vck['bowling_style'])) { // Check if bowling_style is not null or empty
+                                    mysqli_data_seek($ssck, 0); // Reset the pointer to the beginning   
+                                    while ($players_ssck = mysqli_fetch_assoc($ssck)) {
+                                        if (!empty($players_ssck['bowling_style'])) { // Check if bowling_style is not null or empty
                                     ?>
-                                            <option value="<?php echo $players_vck['player_id'] ?>"><?php echo $players_vck['first_name'] . ' ' . $players_vck['last_name'] ?></option>
+                                            <option value="<?php echo $players_ssck['player_id'] ?>"><?php echo $players_ssck['first_name'] . ' ' . $players_ssck['last_name'] ?></option>
                                     <?php
                                         }
                                     }
@@ -792,7 +792,7 @@ $players_vck = mysqli_fetch_assoc($vck);
                                 $bowling_result = Database::q("SELECT p.first_name, p.last_name, b.* 
                                     FROM players p 
                                     LEFT JOIN bowling_figures b ON p.player_id = b.player_id 
-                                    WHERE p.team_id = 2
+                                    WHERE p.team_id = 1
                                     ORDER BY b.bowling_ord ASC");
 
                                 // Totals
